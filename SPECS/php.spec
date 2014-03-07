@@ -67,7 +67,8 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
-Release: 7%{?dist}
+# Only odd release to avoid conflicts with even release used by php54 SCL
+Release: 21%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -127,6 +128,10 @@ Patch60: php-5.4.16-pdotests.patch
 # Security fixes
 Patch100: php-5.4.17-CVE-2013-4013.patch
 Patch101: php-5.4.16-CVE-2013-4248.patch
+Patch102: php-5.4.16-CVE-2013-6420.patch
+Patch104: php-5.4.16-CVE-2014-1943.patch
+Patch105: php-5.4.16-CVE-2013-6712.patch
+Patch106: php-5.4.16-CVE-2014-2270.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -636,6 +641,10 @@ support for using the enchant library to PHP.
 
 %patch100 -p1 -b .cve4113
 %patch101 -p1 -b .cve4248
+%patch102 -p1 -b .cve6420
+%patch104 -p1 -b .cve1943
+%patch105 -p1 -b .cve6712
+%patch106 -p1 -b .cve2270
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -743,8 +752,8 @@ chmod 644 README.*
 # php-fpm configuration files for tmpfiles.d
 echo "d /run/php-fpm 755 root root" >php-fpm.tmpfiles
 
-# bring in newer config.guess and config.sub for aarch64 support
-cp -f /usr/lib/rpm/config.{guess,sub} .
+# bring in newer Red Hat config.guess and config.sub for aarch64/ppc64p7 support
+cp -f /usr/lib/rpm/redhat/config.{guess,sub} .
 
 
 %build
@@ -760,6 +769,9 @@ touch configure.in
 ./buildconf --force
 
 CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing -Wno-pointer-sign"
+%ifarch ppc64
+CFLAGS="$CFLAGS -O3"
+%endif
 export CFLAGS
 
 # Install extension modules in %{_libdir}/php/modules.
@@ -1407,6 +1419,35 @@ fi
 
 
 %changelog
+* Fri Mar  7 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-21
+- fix out-of-bounds memory access in fileinfo CVE-2014-2270
+
+* Fri Feb 21 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-19
+- fix memory leak introduce in patch for CVE-2014-1943
+- fix heap-based buffer over-read in DateInterval CVE-2013-6712
+
+* Wed Feb 19 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-17
+- fix infinite recursion in fileinfo CVE-2014-1943
+
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 5.4.16-15
+- Mass rebuild 2014-01-24
+
+* Wed Jan 15 2014 Honza Horak <hhorak@redhat.com> - 5.4.16-14
+- Rebuild for mariadb-libs
+  Related: #1045013
+
+* Fri Jan 10 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-13
+- build with -O3 on ppc64 #1051073
+
+* Thu Jan  9 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-11
+- use correct config.{guess,sub} for ppc64p7 #1048892
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 5.4.16-10
+- Mass rebuild 2013-12-27
+
+* Fri Dec  6 2013 Remi Collet <rcollet@redhat.com> - 5.4.16-9
+- add security fix for CVE-2013-6420
+
 * Mon Nov  4 2013 Remi Collet <rcollet@redhat.com> - 5.4.16-7
 - fix for non x86 build #1023796
 
