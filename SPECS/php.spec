@@ -68,7 +68,7 @@ Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
 # Only odd release to avoid conflicts with even release used by php54 SCL
-Release: 21%{?dist}
+Release: 23%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -131,7 +131,17 @@ Patch101: php-5.4.16-CVE-2013-4248.patch
 Patch102: php-5.4.16-CVE-2013-6420.patch
 Patch104: php-5.4.16-CVE-2014-1943.patch
 Patch105: php-5.4.16-CVE-2013-6712.patch
-Patch106: php-5.4.16-CVE-2014-2270.patch
+Patch107: php-5.4.16-CVE-2014-2270.patch
+Patch108: php-5.4.16-CVE-2013-7345.patch
+Patch109: php-5.4.16-CVE-2014-0237.patch
+Patch110: php-5.4.16-CVE-2014-0238.patch
+Patch111: php-5.4.16-CVE-2014-3479.patch
+Patch112: php-5.4.16-CVE-2014-3480.patch
+Patch113: php-5.4.16-CVE-2014-4721.patch
+Patch114: php-5.4.16-CVE-2014-4049.patch
+Patch115: php-5.4.16-CVE-2014-3515.patch
+Patch116: php-5.4.16-CVE-2014-0207.patch
+Patch117: php-5.4.16-CVE-2014-3487.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -644,7 +654,17 @@ support for using the enchant library to PHP.
 %patch102 -p1 -b .cve6420
 %patch104 -p1 -b .cve1943
 %patch105 -p1 -b .cve6712
-%patch106 -p1 -b .cve2270
+%patch107 -p1 -b .cve2270
+%patch108 -p1 -b .cve7345
+%patch109 -p1 -b .cve0237
+%patch110 -p1 -b .cve0238
+%patch111 -p1 -b .cve3479
+%patch112 -p1 -b .cve3480
+%patch113 -p1 -b .cve4721
+%patch114 -p1 -b .cve4049
+%patch115 -p1 -b .cve3515
+%patch116 -p1 -b .cve0207
+%patch117 -p1 -b .cve3487
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -1419,14 +1439,34 @@ fi
 
 
 %changelog
-* Fri Mar  7 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-21
+* Fri Jun 13 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23
+- fileinfo: cdf_unpack_summary_info() excessive looping
+  DoS. CVE-2014-0237
+- fileinfo: CDF property info parsing nelements infinite
+  loop. CVE-2014-0238
+- fileinfo: cdf_check_stream_offset insufficient boundary
+  check. CVE-2014-3479
+- fileinfo: cdf_count_chain insufficient boundary check
+  CVE-2014-3480
+- fileinfo: cdf_read_short_sector insufficient boundary
+  check. CVE-2014-0207
+- fileinfo: cdf_read_property_info insufficient boundary
+  check. CVE-2014-3487
+- fileinfo: fix extensive backtracking CVE-2013-7345
+- core: type confusion issue in phpinfo(). CVE-2014-4721
+- core: fix heap-based buffer overflow in DNS TXT record
+  parsing. CVE-2014-4049
+- core: unserialize() SPL ArrayObject / SPLObjectStorage
+  type confusion flaw. CVE-2014-3515
+
+* Fri Mar  7 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-21
 - fix out-of-bounds memory access in fileinfo CVE-2014-2270
 
-* Fri Feb 21 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-19
+* Fri Feb 21 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-19
 - fix memory leak introduce in patch for CVE-2014-1943
 - fix heap-based buffer over-read in DateInterval CVE-2013-6712
 
-* Wed Feb 19 2014 Remi Collet <rcollet@redhat.com> - 5.5.16-17
+* Wed Feb 19 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-17
 - fix infinite recursion in fileinfo CVE-2014-1943
 
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 5.4.16-15
