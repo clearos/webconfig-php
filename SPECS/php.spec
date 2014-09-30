@@ -68,7 +68,7 @@ Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
 # Only odd release to avoid conflicts with even release used by php54 SCL
-Release: 23%{?dist}
+Release: 23%{?dist}.1
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -142,6 +142,14 @@ Patch114: php-5.4.16-CVE-2014-4049.patch
 Patch115: php-5.4.16-CVE-2014-3515.patch
 Patch116: php-5.4.16-CVE-2014-0207.patch
 Patch117: php-5.4.16-CVE-2014-3487.patch
+Patch118: php-5.4.16-CVE-2014-2497.patch
+Patch119: php-5.4.16-CVE-2014-3478.patch
+Patch120: php-5.4.16-CVE-2014-3538.patch
+Patch121: php-5.4.16-CVE-2014-3587.patch
+Patch122: php-5.4.16-CVE-2014-5120.patch
+Patch123: php-5.4.16-CVE-2014-4698.patch
+Patch124: php-5.4.16-CVE-2014-4670.patch
+Patch125: php-5.4.16-CVE-2014-3597.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -665,6 +673,14 @@ support for using the enchant library to PHP.
 %patch115 -p1 -b .cve3515
 %patch116 -p1 -b .cve0207
 %patch117 -p1 -b .cve3487
+%patch118 -p1 -b .cve2497
+%patch119 -p1 -b .cve3478
+%patch120 -p1 -b .cve3538
+%patch121 -p1 -b .cve3587
+%patch122 -p1 -b .cve5120
+%patch123 -p1 -b .cve4698
+%patch124 -p1 -b .cve4670
+%patch125 -p1 -b .cve3597
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -1439,6 +1455,22 @@ fi
 
 
 %changelog
+* Thu Sep 11 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23.1
+- gd: fix NULL pointer dereference in gdImageCreateFromXpm().
+  CVE-2014-2497
+- gd: fix NUL byte injection in file names. CVE-2014-5120
+- fileinfo: fix extensive backtracking in regular expression
+  (incomplete fix for CVE-2013-7345). CVE-2014-3538
+- fileinfo: fix mconvert incorrect handling of truncated
+  pascal string size. CVE-2014-3478
+- fileinfo: fix cdf_read_property_info
+  (incomplete fix for CVE-2012-1571). CVE-2014-3587
+- spl: fix use-after-free in ArrayIterator due to object
+  change during sorting. CVE-2014-4698
+- spl: fix use-after-free in SPL Iterators. CVE-2014-4670
+- network: fix segfault in dns_get_record
+  (incomplete fix for CVE-2014-4049). CVE-2014-3597
+
 * Fri Jun 13 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23
 - fileinfo: cdf_unpack_summary_info() excessive looping
   DoS. CVE-2014-0237
