@@ -68,7 +68,7 @@ Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
 # Only odd release to avoid conflicts with even release used by php54 SCL
-Release: 23%{?dist}.1
+Release: 23%{?dist}.3
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -150,6 +150,10 @@ Patch122: php-5.4.16-CVE-2014-5120.patch
 Patch123: php-5.4.16-CVE-2014-4698.patch
 Patch124: php-5.4.16-CVE-2014-4670.patch
 Patch125: php-5.4.16-CVE-2014-3597.patch
+Patch126: php-5.4.16-CVE-2014-3668.patch
+Patch127: php-5.4.16-CVE-2014-3669.patch
+Patch128: php-5.4.16-CVE-2014-3670.patch
+Patch129: php-5.4.16-CVE-2014-3710.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -681,7 +685,10 @@ support for using the enchant library to PHP.
 %patch123 -p1 -b .cve4698
 %patch124 -p1 -b .cve4670
 %patch125 -p1 -b .cve3597
-
+%patch126 -p1 -b .cve3668
+%patch127 -p1 -b .cve3669
+%patch128 -p1 -b .cve3670
+%patch129 -p1 -b .cve3710
 
 # Prevent %%doc confusion over LICENSE files
 cp Zend/LICENSE Zend/ZEND_LICENSE
@@ -1455,6 +1462,14 @@ fi
 
 
 %changelog
+* Thu Oct 23 2014 Jan Kaluza <jkaluza@redhat.com> - 5.4.16-23.3
+- fileinfo: fix out-of-bounds read in elf note headers. CVE-2014-3710
+
+* Tue Oct 21 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23.2
+- xmlrpc: fix out-of-bounds read flaw in mkgmtime() CVE-2014-3668
+- core: fix integer overflow in unserialize() CVE-2014-3669
+- exif: fix heap corruption issue in exif_thumbnail() CVE-2014-3670
+
 * Thu Sep 11 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23.1
 - gd: fix NULL pointer dereference in gdImageCreateFromXpm().
   CVE-2014-2497
