@@ -62,13 +62,14 @@
 %global db_devel  libdb-devel
 %endif
 
+%global _performance_build 1
+
 #global rcver RC2
 
 Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
-# Only odd release to avoid conflicts with even release used by php54 SCL
-Release: 23%{?dist}.3
+Release: 36%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -106,6 +107,12 @@ Patch24: php-5.4.16-fpm.patch
 # https://bugs.php.net/65143 php-cgi man page
 # https://bugs.php.net/65142 phar man page
 Patch25: php-5.4.16-man.patch
+# https://bugs.php.net/66987 fileinfo / bigendian
+Patch26: php-5.4.16-bug66987.patch
+# https://bugs.php.net/50444 pdo_odbc / x86_64
+Patch27: php-5.4.16-bug50444.patch
+# https://bugs.php.net/63595 gmp memory allocator
+Patch28: php-5.4.16-bug63595.patch
 
 # Functional changes
 Patch40: php-5.4.0-dlopen.patch
@@ -121,6 +128,8 @@ Patch45: php-5.4.8-ldap_r.patch
 Patch46: php-5.4.9-fixheader.patch
 # drop "Configure command" from phpinfo output
 Patch47: php-5.4.9-phpinfo.patch
+# Fix php_select on aarch64 (http://bugs.php.net/67406)
+Patch48: php-5.4.16-aarch64-select.patch
 
 # Fixes for tests
 Patch60: php-5.4.16-pdotests.patch
@@ -154,6 +163,27 @@ Patch126: php-5.4.16-CVE-2014-3668.patch
 Patch127: php-5.4.16-CVE-2014-3669.patch
 Patch128: php-5.4.16-CVE-2014-3670.patch
 Patch129: php-5.4.16-CVE-2014-3710.patch
+Patch130: php-5.4.16-CVE-2014-8142.patch
+Patch131: php-5.4.16-CVE-2015-0231.patch
+Patch132: php-5.4.16-CVE-2015-0232.patch
+Patch133: php-5.4.16-CVE-2014-9652.patch
+Patch134: php-5.4.16-CVE-2014-9709.patch
+Patch135: php-5.4.16-CVE-2015-0273.patch
+Patch136: php-5.4.16-CVE-2014-9705.patch
+Patch137: php-5.4.16-CVE-2015-2301.patch
+Patch138: php-5.4.16-bug69085.patch
+Patch139: php-5.4.16-CVE-2015-2787.patch
+Patch140: php-5.4.16-CVE-2015-2348.patch
+Patch145: php-5.4.16-CVE-2015-4022.patch
+Patch146: php-5.4.16-CVE-2015-4021.patch
+Patch147: php-5.4.16-CVE-2015-4024.patch
+Patch148: php-5.4.16-CVE-2015-4025.patch
+Patch149: php-5.4.16-CVE-2015-3330.patch
+Patch150: php-5.4.16-bug69353.patch
+Patch151: php-5.4.16-CVE-2015-2783.patch
+Patch152: php-5.4.16-CVE-2015-3329.patch
+Patch153: php-5.4.16-bug68819.patch
+Patch154: php-5.4.16-bug69152.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -645,6 +675,9 @@ support for using the enchant library to PHP.
 %patch23 -p1 -b .gc
 %patch24 -p1 -b .fpm
 %patch25 -p1 -b .manpages
+%patch26 -p1 -b .bug66987
+%patch27 -p1 -b .bug50444
+%patch28 -p1 -b .bug63595
 
 %patch40 -p1 -b .dlopen
 %patch41 -p1 -b .easter
@@ -658,6 +691,7 @@ support for using the enchant library to PHP.
 %endif
 %patch46 -p1 -b .fixheader
 %patch47 -p1 -b .phpinfo
+%patch48 -p1 -b .aarch64select
 
 %patch60 -p1 -b .pdotests
 
@@ -689,6 +723,28 @@ support for using the enchant library to PHP.
 %patch127 -p1 -b .cve3669
 %patch128 -p1 -b .cve3670
 %patch129 -p1 -b .cve3710
+%patch130 -p1 -b .cve8142
+%patch131 -p1 -b .cve0231
+%patch132 -p1 -b .cve0232
+%patch133 -p1 -b .cve9652
+%patch134 -p1 -b .cve9709
+%patch135 -p1 -b .cve0273
+%patch136 -p1 -b .cve9705
+%patch137 -p1 -b .cve2301
+%patch138 -p1 -b .bug68095
+%patch139 -p1 -b .cve2787
+%patch140 -p1 -b .cve2348
+%patch145 -p1 -b .cve4022
+%patch146 -p1 -b .cve4021
+%patch147 -p1 -b .cve4024
+%patch148 -p1 -b .cve4025
+%patch149 -p1 -b .cve3330
+%patch150 -p1 -b .bug69353
+%patch151 -p1 -b .cve2783
+%patch152 -p1 -b .cve3329
+%patch153 -p1 -b .bug68819
+%patch154 -p1 -b .bug69152
+
 
 # Prevent %%doc confusion over LICENSE files
 cp Zend/LICENSE Zend/ZEND_LICENSE
@@ -812,9 +868,6 @@ touch configure.in
 ./buildconf --force
 
 CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing -Wno-pointer-sign"
-%ifarch ppc64
-CFLAGS="$CFLAGS -O3"
-%endif
 export CFLAGS
 
 # Install extension modules in %{_libdir}/php/modules.
@@ -1462,15 +1515,58 @@ fi
 
 
 %changelog
-* Thu Oct 23 2014 Jan Kaluza <jkaluza@redhat.com> - 5.4.16-23.3
+* Wed Jun 10 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-36
+- fix more functions accept paths with NUL character #1213407
+
+* Fri Jun  5 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-35
+- core: fix multipart/form-data request can use excessive
+  amount of CPU usage CVE-2015-4024
+- fix various functions accept paths with NUL character
+  CVE-2015-4025, CVE-2015-4026, #1213407
+- fileinfo: fix denial of service when processing a crafted
+  file #1213442
+- ftp: fix integer overflow leading to heap overflow when
+  reading FTP file listing CVE-2015-4022
+- phar: fix buffer over-read in metadata parsing CVE-2015-2783
+- phar: invalid pointer free() in phar_tar_process_metadata()
+  CVE-2015-3307
+- phar: fix buffer overflow in phar_set_inode() CVE-2015-3329
+- phar: fix memory corruption in phar_parse_tarfile caused by
+  empty entry file name CVE-2015-4021
+- soap: fix type confusion through unserialize #1222538
+- apache2handler: fix pipelined request executed in deinitialized
+  interpreter under httpd 2.4 CVE-2015-3330
+
+* Thu Apr 16 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-34
+- fix memory corruption in fileinfo module on big endian
+  machines #1082624
+- fix segfault in pdo_odbc on x86_64 #1159892
+- fix segfault in gmp allocator #1154760
+
+* Fri Apr 10 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-33
+- core: use after free vulnerability in unserialize()
+  CVE-2014-8142 and CVE-2015-0231
+- core: fix use-after-free in unserialize CVE-2015-2787
+- core: fix NUL byte injection in file name argument of
+  move_uploaded_file() CVE-2015-2348
+- date: use after free vulnerability in unserialize CVE-2015-0273
+- enchant: fix heap buffer overflow in enchant_broker_request_dict
+  CVE-2014-9705
+- exif: free called on unitialized pointer CVE-2015-0232
+- fileinfo: fix out of bounds read in mconvert CVE-2014-9652
+- gd: fix buffer read overflow in gd_gif_in.c CVE-2014-9709
+- phar: use after free in phar_object.c CVE-2015-2301
+- soap: fix type confusion through unserialize
+
+* Thu Oct 23 2014 Jan Kaluza <jkaluza@redhat.com> - 5.4.16-31
 - fileinfo: fix out-of-bounds read in elf note headers. CVE-2014-3710
 
-* Tue Oct 21 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23.2
+* Tue Oct 21 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-29
 - xmlrpc: fix out-of-bounds read flaw in mkgmtime() CVE-2014-3668
 - core: fix integer overflow in unserialize() CVE-2014-3669
 - exif: fix heap corruption issue in exif_thumbnail() CVE-2014-3670
 
-* Thu Sep 11 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23.1
+* Fri Sep 12 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-27
 - gd: fix NULL pointer dereference in gdImageCreateFromXpm().
   CVE-2014-2497
 - gd: fix NUL byte injection in file names. CVE-2014-5120
@@ -1485,6 +1581,11 @@ fi
 - spl: fix use-after-free in SPL Iterators. CVE-2014-4670
 - network: fix segfault in dns_get_record
   (incomplete fix for CVE-2014-4049). CVE-2014-3597
+
+
+* Thu Aug 21 2014 Jan Kaluza <jkaluza@redhat.com> - 5.4.16-25
+- fix segfault after startup on aarch64 (#1107567)
+- compile php with -O3 on ppc64le (#1123499)
 
 * Fri Jun 13 2014 Remi Collet <rcollet@redhat.com> - 5.4.16-23
 - fileinfo: cdf_unpack_summary_info() excessive looping
