@@ -1,3 +1,5 @@
+%global _webconfigdir /usr/clearos/sandbox
+
 # API/ABI check
 %global apiver      20100412
 %global zendver     20100525
@@ -17,13 +19,14 @@
 %global mysql_sock %(mysql_config --socket 2>/dev/null || echo /var/lib/mysql/mysql.sock)
 
 # Regression tests take a long time, you can skip 'em with this
-%{!?runselftest: %{expand: %%global runselftest 1}}
+# FIXME
+%{!?runselftest: %{expand: %%global runselftest 0}}
 
 # Use the arch-specific mysql_config binary to avoid mismatch with the
 # arch detection heuristic used by bindir/mysql_config.
 %global mysql_config %{_libdir}/mysql/mysql_config
 
-%global with_fpm 1
+%global with_fpm 0
 
 # Build mysql/mysqli/pdo extensions using libmysqlclient or only mysqlnd
 %global with_libmysql 1
@@ -38,13 +41,13 @@
 %endif
 
 # /usr/sbin/apsx with httpd < 2.4 and defined as /usr/bin/apxs with httpd >= 2.4
-%{!?_httpd_apxs:       %{expand: %%global _httpd_apxs       %%{_sbindir}/apxs}}
-%{!?_httpd_mmn:        %{expand: %%global _httpd_mmn        %%(cat %{_includedir}/httpd/.mmn 2>/dev/null || echo missing-httpd-devel)}}
-%{!?_httpd_confdir:    %{expand: %%global _httpd_confdir    %%{_sysconfdir}/httpd/conf.d}}
+%{!?_httpd_apxs:       %{expand: %%global _httpd_apxs       %%{_webconfigdir}%{_sbindir}/apxs}}
+%{!?_httpd_mmn:        %{expand: %%global _httpd_mmn        %%(cat %{_includedir}/webconfig-httpd/.mmn 2>/dev/null || echo missing-httpd-devel)}}
+%{!?_httpd_confdir:    %{expand: %%global _httpd_confdir    %%{_webconfigdir}%{_sysconfdir}/httpd/conf.d}}
 # /etc/httpd/conf.d with httpd < 2.4 and defined as /etc/httpd/conf.modules.d with httpd >= 2.4
-%{!?_httpd_modconfdir: %{expand: %%global _httpd_modconfdir %%{_sysconfdir}/httpd/conf.d}}
-%{!?_httpd_moddir:     %{expand: %%global _httpd_moddir     %%{_libdir}/httpd/modules}}
-%{!?_httpd_contentdir: %{expand: %%global _httpd_contentdir /var/www}}
+%{!?_httpd_modconfdir: %{expand: %%global _httpd_modconfdir %%{_webconfigdir}%{_sysconfdir}/httpd/conf.d}}
+%{!?_httpd_moddir:     %{expand: %%global _httpd_moddir     %%{_webconfigdir}%{_libdir}/httpd/modules}}
+%{!?_httpd_contentdir: %{expand: %%global _httpd_contentdir /usr/clearos/sandbox/var/www}}
 
 %if 0%{?fedora} < 17 && 0%{?rhel} < 7
 %global with_zip     0
@@ -65,7 +68,7 @@
 #global rcver RC2
 
 Summary: PHP scripting language for creating dynamic web sites
-Name: php
+Name: webconfig-php
 Version: 5.4.16
 # Only odd release to avoid conflicts with even release used by php54 SCL
 Release: 23%{?dist}.3
@@ -157,7 +160,7 @@ Patch129: php-5.4.16-CVE-2014-3710.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
-BuildRequires: httpd-devel >= 2.0.46-1, pam-devel
+BuildRequires: webconfig-httpd-devel >= 2.0.46-1, pam-devel
 BuildRequires: libstdc++-devel, openssl-devel
 BuildRequires: sqlite-devel >= 3.6.0
 BuildRequires: zlib-devel, smtpdaemon, libedit-devel
@@ -168,20 +171,19 @@ BuildRequires: libtool-ltdl-devel
 BuildRequires: libzip-devel >= 0.10
 %endif
 
-Obsoletes: php-dbg, php3, phpfi, stronghold-php
 %if %{with_zts}
-Obsoletes: php-zts < 5.3.7
-Provides: php-zts = %{version}-%{release}
-Provides: php-zts%{?_isa} = %{version}-%{release}
+
+Provides: webconfig-php-zts = %{version}-%{release}
+Provides: webconfig-php-zts%{?_isa} = %{version}-%{release}
 %endif
 
-Requires: httpd-mmn = %{_httpd_mmn}
-Provides: mod_php = %{version}-%{release}
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-httpd-mmn = %{_httpd_mmn}
+Provides: webconfig-mod_php = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 # For backwards-compatibility, require php-cli for the time being:
-Requires: php-cli%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-cli%{?_isa} = %{version}-%{release}
 # To ensure correct /var/lib/php/session ownership:
-Requires(pre): httpd
+Requires(pre): webconfig-httpd
 
 
 # Don't provides extensions, which are not shared library, as .so
@@ -199,20 +201,20 @@ non-commercial database management systems, so writing a
 database-enabled webpage with PHP is fairly simple. The most common
 use of PHP coding is probably as a replacement for CGI scripts. 
 
-The php package contains the module (often referred to as mod_php)
-which adds support for the PHP language to Apache HTTP Server.
+The php package contains the module which adds support for the PHP
+language to Apache HTTP Server.
 
 %package cli
 Group: Development/Languages
 Summary: Command-line interface for PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
-Provides: php-cgi = %{version}-%{release}, php-cgi%{?_isa} = %{version}-%{release}
-Provides: php-pcntl, php-pcntl%{?_isa}
-Provides: php-readline, php-readline%{?_isa}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-cgi = %{version}-%{release}, webconfig-php-cgi%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-pcntl, webconfig-php-pcntl%{?_isa}
+Provides: webconfig-php-readline, webconfig-php-readline%{?_isa}
 
 %description cli
-The php-cli package contains the command-line interface 
-executing PHP scripts, /usr/bin/php, and the CGI interface.
+The webconfig-php-cli package contains the command-line interface 
+executing PHP scripts, /usr/clearos/sandbox/bin/php, and the CGI interface.
 
 
 %if %{with_fpm}
@@ -251,88 +253,97 @@ Summary: Common files for PHP
 # main/snprintf.c, main/spprintf.c and main/rfc1867.c are ASL 1.0
 License: PHP and BSD and ASL 1.0
 # ABI/API check - Arch specific
-Provides: php-api = %{apiver}%{isasuffix}, php-zend-abi = %{zendver}%{isasuffix}
-Provides: php(api) = %{apiver}%{isasuffix}, php(zend-abi) = %{zendver}%{isasuffix}
-Provides: php(language) = %{version}, php(language)%{?_isa} = %{version}
+Provides: webconifg-php-api = %{apiver}%{isasuffix}, webconifg-php-zend-abi = %{zendver}%{isasuffix}
+Provides: webconifg-php(api) = %{apiver}%{isasuffix}, webconifg-php(zend-abi) = %{zendver}%{isasuffix}
+Provides: webconifg-php(language) = %{version}, webconifg-php(language)%{?_isa} = %{version}
 # Provides for all builtin/shared modules:
-Provides: php-bz2, php-bz2%{?_isa}
-Provides: php-calendar, php-calendar%{?_isa}
-Provides: php-core = %{version}, php-core%{?_isa} = %{version}
-Provides: php-ctype, php-ctype%{?_isa}
-Provides: php-curl, php-curl%{?_isa}
-Provides: php-date, php-date%{?_isa}
-Provides: php-ereg, php-ereg%{?_isa}
-Provides: php-exif, php-exif%{?_isa}
-Provides: php-fileinfo, php-fileinfo%{?_isa}
-Provides: php-pecl-Fileinfo = %{fileinfover}, php-pecl-Fileinfo%{?_isa} = %{fileinfover}
-Provides: php-pecl(Fileinfo) = %{fileinfover}, php-pecl(Fileinfo)%{?_isa} = %{fileinfover}
-Provides: php-filter, php-filter%{?_isa}
-Provides: php-ftp, php-ftp%{?_isa}
-Provides: php-gettext, php-gettext%{?_isa}
-Provides: php-gmp, php-gmp%{?_isa}
-Provides: php-hash, php-hash%{?_isa}
-Provides: php-mhash = %{version}, php-mhash%{?_isa} = %{version}
-Provides: php-iconv, php-iconv%{?_isa}
-Provides: php-json, php-json%{?_isa}
-Provides: php-pecl-json = %{jsonver}, php-pecl-json%{?_isa} = %{jsonver}
-Provides: php-pecl(json) = %{jsonver}, php-pecl(json)%{?_isa} = %{jsonver}
-Provides: php-libxml, php-libxml%{?_isa}
-Provides: php-openssl, php-openssl%{?_isa}
-Provides: php-pecl-phar = %{pharver}, php-pecl-phar%{?_isa} = %{pharver}
-Provides: php-pecl(phar) = %{pharver}, php-pecl(phar)%{?_isa} = %{pharver}
-Provides: php-phar, php-phar%{?_isa}
-Provides: php-pcre, php-pcre%{?_isa}
-Provides: php-reflection, php-reflection%{?_isa}
-Provides: php-session, php-session%{?_isa}
-Provides: php-shmop, php-shmop%{?_isa}
-Provides: php-simplexml, php-simplexml%{?_isa}
-Provides: php-sockets, php-sockets%{?_isa}
-Provides: php-spl, php-spl%{?_isa}
-Provides: php-standard = %{version}, php-standard%{?_isa} = %{version}
-Provides: php-tokenizer, php-tokenizer%{?_isa}
+Provides: webconfig-php-bz2, webconfig-php-bz2%{?_isa}
+Provides: webconfig-php-calendar, webconfig-php-calendar%{?_isa}
+Provides: webconfig-php-core = %{version}, webconfig-php-core%{?_isa} = %{version}
+Provides: webconfig-php-ctype, webconfig-php-ctype%{?_isa}
+Provides: webconfig-php-curl, webconfig-php-curl%{?_isa}
+Provides: webconfig-php-date, webconfig-php-date%{?_isa}
+Provides: webconfig-php-ereg, webconfig-php-ereg%{?_isa}
+Provides: webconfig-php-exif, webconfig-php-exif%{?_isa}
+Provides: webconfig-php-fileinfo, webconfig-php-fileinfo%{?_isa}
+Provides: webconfig-php-filter, webconfig-php-filter%{?_isa}
+Provides: webconfig-php-ftp, webconfig-php-ftp%{?_isa}
+Provides: webconfig-php-gettext, webconfig-php-gettext%{?_isa}
+Provides: webconfig-php-hash, webconfig-php-hash%{?_isa}
+Provides: webconfig-php-mhash = %{version}, webconfig-php-mhash%{?_isa} = %{version}
+Provides: webconfig-php-iconv, webconfig-php-iconv%{?_isa}
+Provides: webconfig-php-libxml, webconfig-php-libxml%{?_isa}
+Provides: webconfig-php-openssl, webconfig-php-openssl%{?_isa}
+Provides: webconfig-php-phar, webconfig-php-phar%{?_isa}
+Provides: webconfig-php-pcre, webconfig-php-pcre%{?_isa}
+Provides: webconfig-php-reflection, webconfig-php-reflection%{?_isa}
+Provides: webconfig-php-session, webconfig-php-session%{?_isa}
+Provides: webconfig-php-sockets, webconfig-php-sockets%{?_isa}
+Provides: webconfig-php-spl, webconfig-php-spl%{?_isa}
+Provides: webconfig-php-standard = %{version}, webconfig-php-standard%{?_isa} = %{version}
+Provides: webconfig-php-tokenizer, webconfig-php-tokenizer%{?_isa}
+Provides: webconfig-php-phar, webconfig-php-phar%{?_isa}
+Provides: webconfig-php-pcre, webconfig-php-pcre%{?_isa}
+Provides: webconfig-php-reflection, webconfig-php-reflection%{?_isa}
+Provides: webconfig-php-session, webconfig-php-session%{?_isa}
+Provides: webconfig-php-shmop, webconfig-php-shmop%{?_isa}
+Provides: webconfig-php-simplexml, webconfig-php-simplexml%{?_isa}
+Provides: webconfig-php-sockets, webconfig-php-sockets%{?_isa}
+Provides: webconfig-php-spl, webconfig-php-spl%{?_isa}
+Provides: webconfig-php-standard = %{version}, webconfig-php-standard%{?_isa} = %{version}
+Provides: webconfig-php-tokenizer, webconfig-php-tokenizer%{?_isa}
 %if %{with_zip}
-Provides: php-zip, php-zip%{?_isa}
-Provides: php-pecl-zip = %{zipver}, php-pecl-zip%{?_isa} = %{zipver}
-Provides: php-pecl(zip) = %{zipver}, php-pecl(zip)%{?_isa} = %{zipver}
-Obsoletes: php-pecl-zip < 1.11
+Provides: webconfig-php-zip, webconfig-php-zip%{?_isa}
+Provides: webconfig-php-pecl-zip = %{zipver}, webconfig-php-pecl-zip%{?_isa} = %{zipver}
+Provides: webconfig-php-pecl(zip) = %{zipver}, webconfig-php-pecl(zip)%{?_isa} = %{zipver}
+
 %endif
-Provides: php-zlib, php-zlib%{?_isa}
-Obsoletes: php-openssl
-Obsoletes: php-pecl-json < 1.2.2
-Obsoletes: php-pecl-phar < 1.2.4
-Obsoletes: php-pecl-Fileinfo < 1.0.5
-Obsoletes: php-mhash < 5.3.0
+Provides: webconfig-php-zlib, webconfig-php-zlib%{?_isa}
+Obsoletes: webconfig-php-openssl
+Obsoletes: webconfig-php-pecl-json < 1.2.2
+Obsoletes: webconfig-php-pecl-phar < 1.2.4
+Obsoletes: webconfig-php-pecl-Fileinfo < 1.0.5
+Obsoletes: webconfig-php-mhash < 5.3.0
+
 %description common
-The php-common package contains files used by both the php
-package and the php-cli package.
+The webconfig-php-common package contains files used by both the webconfig-php
+package and the webconfig-php-cli package.
 
 %package devel
 Group: Development/Libraries
 Summary: Files needed for building PHP extensions
-Requires: php-cli%{?_isa} = %{version}-%{release}, autoconf, automake
+Requires: webconfig-php-cli%{?_isa} = %{version}-%{release}, autoconf, automake
 Requires: pcre-devel%{?_isa}
-Obsoletes: php-pecl-pdo-devel
 %if %{with_zts}
-Provides: php-zts-devel = %{version}-%{release}
-Provides: php-zts-devel%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-zts-devel = %{version}-%{release}
+Provides: webconfig-php-zts-devel%{?_isa} = %{version}-%{release}
 %endif
 
 %description devel
-The php-devel package contains the files needed for building PHP
+The webconfig-php-devel package contains the files needed for building PHP
 extensions. If you need to compile your own PHP extensions, you will
 need to install this package.
+
+%package imap
+Summary: A module for PHP applications that use IMAP
+Group: Development/Languages
+Requires: %{name}-common%{?_isa} = %{version}-%{release}
+BuildRequires: krb5-devel, openssl-devel, libc-client-devel
+
+%description imap
+The %{name}-imap package contains a dynamic shared object that will
+add support for the IMAP protocol to PHP.
 
 %package ldap
 Summary: A module for PHP applications that use LDAP
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
-Obsoletes: mod_php3-ldap, stronghold-php-ldap
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: cyrus-sasl-devel, openldap-devel, openssl-devel
 
 %description ldap
-The php-ldap adds Lightweight Directory Access Protocol (LDAP)
+The webconfig-php-ldap adds Lightweight Directory Access Protocol (LDAP)
 support to PHP. LDAP is a set of protocols for accessing directory
 services over the Internet. PHP is an HTML-embedded scripting
 language.
@@ -342,16 +353,15 @@ Summary: A database access abstraction module for PHP applications
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
-Obsoletes: php-pecl-pdo-sqlite, php-pecl-pdo
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 # ABI/API check - Arch specific
-Provides: php-pdo-abi = %{pdover}%{isasuffix}
-Provides: php(pdo-abi) = %{pdover}%{isasuffix}
-Provides: php-sqlite3, php-sqlite3%{?_isa}
-Provides: php-pdo_sqlite, php-pdo_sqlite%{?_isa}
+Provides: webconfig-php-pdo-abi = %{pdover}%{isasuffix}
+Provides: webconfig-php(pdo-abi) = %{pdover}%{isasuffix}
+Provides: webconfig-php-sqlite3, webconfig-php-sqlite3%{?_isa}
+Provides: webconfig-php-pdo_sqlite, webconfig-php-pdo_sqlite%{?_isa}
 
 %description pdo
-The php-pdo package contains a dynamic shared object that will add
+The webconfig-php-pdo package contains a dynamic shared object that will add
 a database access abstraction layer to PHP.  This module provides
 a common interface for accessing MySQL, PostgreSQL or other 
 databases.
@@ -362,21 +372,20 @@ Summary: A module for PHP applications that use MySQL databases
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-pdo%{?_isa} = %{version}-%{release}
-Provides: php_database
-Provides: php-mysqli = %{version}-%{release}
-Provides: php-mysqli%{?_isa} = %{version}-%{release}
-Provides: php-pdo_mysql, php-pdo_mysql%{?_isa}
-Obsoletes: mod_php3-mysql, stronghold-php-mysql
+Requires: webconfig-php-pdo%{?_isa} = %{version}-%{release}
+Provides: webconfig-php_database
+Provides: webconfig-php-mysqli = %{version}-%{release}
+Provides: webconfig-php-mysqli%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-pdo_mysql, webconfig-php-pdo_mysql%{?_isa}
 BuildRequires: mysql-devel >= 4.1.0
-Conflicts: php-mysqlnd
+Conflicts: webconfig-php-mysqlnd
 
 %description mysql
-The php-mysql package contains a dynamic shared object that will add
+The webconfig-php-mysql package contains a dynamic shared object that will add
 MySQL database support to PHP. MySQL is an object-relational database
 management system. PHP is an HTML-embeddable scripting language. If
 you need MySQL support for PHP applications, you will need to install
-this package and the php package.
+this package and the webconfig-php package.
 %endif
 
 %package mysqlnd
@@ -384,23 +393,23 @@ Summary: A module for PHP applications that use MySQL databases
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-pdo%{?_isa} = %{version}-%{release}
-Provides: php_database
-Provides: php-mysql = %{version}-%{release}
-Provides: php-mysql%{?_isa} = %{version}-%{release}
-Provides: php-mysqli = %{version}-%{release}
-Provides: php-mysqli%{?_isa} = %{version}-%{release}
-Provides: php-pdo_mysql, php-pdo_mysql%{?_isa}
+Requires: webconfig-php-pdo%{?_isa} = %{version}-%{release}
+Provides: webconfig-php_database
+Provides: webconfig-php-mysql = %{version}-%{release}
+Provides: webconfig-php-mysql%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-mysqli = %{version}-%{release}
+Provides: webconfig-php-mysqli%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-pdo_mysql, webconfig-php-pdo_mysql%{?_isa}
 %if ! %{with_libmysql}
-Obsoletes: php-mysql < %{version}-%{release}
+Obsoletes: webconfig-php-mysql < %{version}-%{release}
 %endif
 
 %description mysqlnd
-The php-mysqlnd package contains a dynamic shared object that will add
+The webconfig-php-mysqlnd package contains a dynamic shared object that will add
 MySQL database support to PHP. MySQL is an object-relational database
 management system. PHP is an HTML-embeddable scripting language. If
 you need MySQL support for PHP applications, you will need to install
-this package and the php package.
+this package and the webconfig-php package.
 
 This package use the MySQL Native Driver
 
@@ -409,33 +418,32 @@ Summary: A PostgreSQL database module for PHP
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-pdo%{?_isa} = %{version}-%{release}
-Provides: php_database
-Provides: php-pdo_pgsql, php-pdo_pgsql%{?_isa}
-Obsoletes: mod_php3-pgsql, stronghold-php-pgsql
+Requires: webconfig-php-pdo%{?_isa} = %{version}-%{release}
+Provides: webconfig-php_database
+Provides: webconfig-php-pdo_pgsql, webconfig-php-pdo_pgsql%{?_isa}
 BuildRequires: krb5-devel, openssl-devel, postgresql-devel
 
 %description pgsql
-The php-pgsql add PostgreSQL database support to PHP.
+The webconfig-php-pgsql package add PostgreSQL database support to PHP.
 PostgreSQL is an object-relational database management
 system that supports almost all SQL constructs. PHP is an
 HTML-embedded scripting language. If you need back-end support for
 PostgreSQL, you should install this package in addition to the main
-php package.
+webconfig-php package.
 
 %package process
 Summary: Modules for PHP script using system process interfaces
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
-Provides: php-posix, php-posix%{?_isa}
-Provides: php-sysvsem, php-sysvsem%{?_isa}
-Provides: php-sysvshm, php-sysvshm%{?_isa}
-Provides: php-sysvmsg, php-sysvmsg%{?_isa}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-posix, webconfig-php-posix%{?_isa}
+Provides: webconfig-php-sysvsem, webconfig-php-sysvsem%{?_isa}
+Provides: webconfig-php-sysvshm, webconfig-php-sysvshm%{?_isa}
+Provides: webconfig-php-sysvmsg, webconfig-php-sysvmsg%{?_isa}
 
 %description process
-The php-process package contains dynamic shared objects which add
+The webconfig-php-process package contains dynamic shared objects which add
 support to PHP using system interfaces for inter-process
 communication.
 
@@ -445,19 +453,18 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # pdo_odbc is licensed under PHP version 3.0
 License: PHP
-Requires: php-pdo%{?_isa} = %{version}-%{release}
-Provides: php_database
-Provides: php-pdo_odbc, php-pdo_odbc%{?_isa}
-Obsoletes: stronghold-php-odbc
+Requires: webconfig-php-pdo%{?_isa} = %{version}-%{release}
+Provides: webconfig-php_database
+Provides: webconfig-php-pdo_odbc, webconfig-php-pdo_odbc%{?_isa}
 BuildRequires: unixODBC-devel
 
 %description odbc
-The php-odbc package contains a dynamic shared object that will add
+The webconfig-php-odbc package contains a dynamic shared object that will add
 database support through ODBC to PHP. ODBC is an open specification
 which provides a consistent API for developers to use for accessing
 data sources (which are often, but not always, databases). PHP is an
 HTML-embeddable scripting language. If you need ODBC support for PHP
-applications, you will need to install this package and the php
+applications, you will need to install this package and the webconfig-php
 package.
 
 %package soap
@@ -465,11 +472,11 @@ Summary: A module for PHP applications that use the SOAP protocol
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: libxml2-devel
 
 %description soap
-The php-soap package contains a dynamic shared object that will add
+The webconfig-php-soap package contains a dynamic shared object that will add
 support to PHP for using the SOAP web services protocol.
 
 %package snmp
@@ -477,32 +484,32 @@ Summary: A module for PHP applications that query SNMP-managed devices
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}, net-snmp
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}, net-snmp
 BuildRequires: net-snmp-devel
 
 %description snmp
-The php-snmp package contains a dynamic shared object that will add
+The webconfig-php-snmp package contains a dynamic shared object that will add
 support for querying SNMP devices to PHP.  PHP is an HTML-embeddable
 scripting language. If you need SNMP support for PHP applications, you
-will need to install this package and the php package.
+will need to install this package and the webconfig-php package.
 
 %package xml
 Summary: A module for PHP applications which use XML
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
-Obsoletes: php-domxml, php-dom
-Provides: php-dom, php-dom%{?_isa}
-Provides: php-xsl, php-xsl%{?_isa}
-Provides: php-domxml, php-domxml%{?_isa}
-Provides: php-wddx, php-wddx%{?_isa}
-Provides: php-xmlreader, php-xmlreader%{?_isa}
-Provides: php-xmlwriter, php-xmlwriter%{?_isa}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
+Obsoletes: webcoifg-php-domxml, webconfig-php-dom
+Provides: webconfig-php-dom, webconfig-php-dom%{?_isa}
+Provides: webconfig-php-simplexml, webconfig-php-simplexml%{?_isa}
+Provides: webconfig-php-wddx, webconfig-php-wddx%{?_isa}
+Provides: webconfig-php-xmlreader, webconfig-php-xmlreader%{?_isa}
+Provides: webconfig-php-xmlwriter, webconfig-php-xmlwriter%{?_isa}
+Provides: webconfig-php-xsl, webconfig-php-xsl%{?_isa}
 BuildRequires: libxslt-devel >= 1.0.18-1, libxml2-devel >= 2.4.14-1
 
 %description xml
-The php-xml package contains dynamic shared objects which add support
+The webconfig-php-xml package contains dynamic shared objects which add support
 to PHP for manipulating XML documents using the DOM tree,
 and performing XSL transformations on XML documents.
 
@@ -512,10 +519,10 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # libXMLRPC is licensed under BSD
 License: PHP and BSD
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 
 %description xmlrpc
-The php-xmlrpc package contains a dynamic shared object that will add
+The webconfig-php-xmlrpc package contains a dynamic shared object that will add
 support for the XML-RPC protocol to PHP.
 
 %package mbstring
@@ -526,10 +533,10 @@ Group: Development/Languages
 # onigurama is licensed under BSD
 # ucgendat is licensed under OpenLDAP
 License: PHP and LGPLv2 and BSD and OpenLDAP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 
 %description mbstring
-The php-mbstring package contains a dynamic shared object that will add
+The webconfig-php-mbstring package contains a dynamic shared object that will add
 support for multi-byte string handling to PHP.
 
 %package gd
@@ -538,13 +545,13 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # libgd is licensed under BSD
 License: PHP and BSD
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 # Required to build the bundled GD library
 BuildRequires: libjpeg-devel, libpng-devel, freetype-devel
 BuildRequires: libXpm-devel, t1lib-devel
 
 %description gd
-The php-gd package contains a dynamic shared object that will add
+The webconfig-php-gd package contains a dynamic shared object that will add
 support for using the gd graphics library to PHP.
 
 %package bcmath
@@ -553,10 +560,10 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # libbcmath is licensed under LGPLv2+
 License: PHP and LGPLv2+
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 
 %description bcmath
-The php-bcmath package contains a dynamic shared object that will add
+The webconfig-php-bcmath package contains a dynamic shared object that will add
 support for using the bcmath library to PHP.
 
 %package dba
@@ -565,22 +572,22 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
 BuildRequires: %{db_devel}, tokyocabinet-devel
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 
 %description dba
-The php-dba package contains a dynamic shared object that will add
+The webconfig-php-dba package contains a dynamic shared object that will add
 support for using the DBA database abstraction layer to PHP.
 
 %package embedded
 Summary: PHP library for embedding in applications
 Group: System Environment/Libraries
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 # doing a real -devel package for just the .so symlink is a bit overkill
-Provides: php-embedded-devel = %{version}-%{release}
-Provides: php-embedded-devel%{?_isa} = %{version}-%{release}
+Provides: webconfig-php-embedded-devel = %{version}-%{release}
+Provides: webconfig-php-embedded-devel%{?_isa} = %{version}-%{release}
 
 %description embedded
-The php-embedded package contains a library which can be embedded
+The webconfig-php-embedded package contains a library which can be embedded
 into applications to provide PHP scripting language support.
 
 %package pspell
@@ -588,11 +595,11 @@ Summary: A module for PHP applications for using pspell interfaces
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: aspell-devel >= 0.50.0
 
 %description pspell
-The php-pspell package contains a dynamic shared object that will add
+The webconfig-php-pspell package contains a dynamic shared object that will add
 support for using the pspell library to PHP.
 
 %package recode
@@ -600,11 +607,11 @@ Summary: A module for PHP applications for using the recode library
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: recode-devel
 
 %description recode
-The php-recode package contains a dynamic shared object that will add
+The webconfig-php-recode package contains a dynamic shared object that will add
 support for using the recode library to PHP.
 
 %package intl
@@ -612,11 +619,11 @@ Summary: Internationalization extension for PHP applications
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: libicu-devel >= 3.6
 
 %description intl
-The php-intl package contains a dynamic shared object that will add
+The webconfig-php-intl package contains a dynamic shared object that will add
 support for using the ICU library to PHP.
 
 %package enchant
@@ -624,11 +631,11 @@ Summary: Enchant spelling extension for PHP applications
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.0
 License: PHP
-Requires: php-common%{?_isa} = %{version}-%{release}
+Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 BuildRequires: enchant-devel >= 1.2.4
 
 %description enchant
-The php-enchant package contains a dynamic shared object that will add
+The webconfig-php-enchant package contains a dynamic shared object that will add
 support for using the enchant library to PHP.
 
 
@@ -798,8 +805,13 @@ echo "d /run/php-fpm 755 root root" >php-fpm.tmpfiles
 # bring in newer Red Hat config.guess and config.sub for aarch64/ppc64p7 support
 cp -f /usr/lib/rpm/redhat/config.{guess,sub} .
 
-
 %build
+# Fix location for devel files                                                                
+perl -pi -e "s:^(phpincludedir = ).*/php:\$1%{_includedir}/webconfig-php:" scripts/Makefile.frag
+perl -pi -e "s:\binclude/php\b:include/webconfig-php:g" acinclude.m4 Makefile.global
+perl -pi -e "s:^(includedir=).*/php:\$1\"%{_includedir}/webconfig-php:" scripts/phpize.in
+perl -pi -e "s:^(include_dir=).*/php:\$1\"%{_includedir}/webconfig-php:" scripts/php-config.in
+
 # aclocal workaround - to be improved
 cat `aclocal --print-ac-dir`/{libtool,ltoptions,ltsugar,ltversion,lt~obsolete}.m4 >>aclocal.m4
 
@@ -812,18 +824,15 @@ touch configure.in
 ./buildconf --force
 
 CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing -Wno-pointer-sign"
-%ifarch ppc64
-CFLAGS="$CFLAGS -O3"
-%endif
 export CFLAGS
 
-# Install extension modules in %{_libdir}/php/modules.
-EXTENSION_DIR=%{_libdir}/php/modules; export EXTENSION_DIR
+# Install extension modules in %{_webconfigdir}%{_libdir}/php/modules.
+EXTENSION_DIR=%{_webconfigdir}%{_libdir}/php/modules; export EXTENSION_DIR
 
 # Set PEAR_INSTALLDIR to ensure that the hard-coded include_path
 # includes the PEAR directory even though pear is packaged
 # separately.
-PEAR_INSTALLDIR=%{_datadir}/pear; export PEAR_INSTALLDIR
+PEAR_INSTALLDIR=%{_webconfigdir}%{_datadir}/pear; export PEAR_INSTALLDIR
 
 # Shell function to configure and build a PHP tree.
 build() {
@@ -834,14 +843,14 @@ ln -sf ../configure
 %configure \
 	--cache-file=../config.cache \
         --with-libdir=%{_lib} \
-	--with-config-file-path=%{_sysconfdir} \
-	--with-config-file-scan-dir=%{_sysconfdir}/php.d \
+	--with-config-file-path=%{_webconfigdir}%{_sysconfdir} \
+	--with-config-file-scan-dir=%{_webconfigdir}%{_sysconfdir}/php.d \
 	--disable-debug \
 	--with-pic \
 	--disable-rpath \
 	--without-pear \
 	--with-bz2 \
-	--with-exec-dir=%{_bindir} \
+	--with-exec-dir=%{_webconfigdir}%{_bindir} \
 	--with-freetype-dir=%{_prefix} \
 	--with-png-dir=%{_prefix} \
 	--with-xpm-dir=%{_prefix} \
@@ -866,8 +875,10 @@ ln -sf ../configure
 	--enable-xml \
         --with-system-tzdata \
 	--with-mhash \
-	$* 
-if test $? != 0; then 
+	--bindir=%{_webconfigdir}%{_bindir} \
+	--libdir=%{_webconfigdir}%{_libdir} \
+	$*
+if test $? != 0; then
   tail -500 config.log
   : configure failed
   exit 1
@@ -879,8 +890,9 @@ make %{?_smp_mflags}
 # Build /usr/bin/php-cgi with the CGI SAPI, and all the shared extensions
 pushd build-cgi
 
-build --libdir=%{_libdir}/php \
+build --libdir=%{_webconfigdir}%{_libdir}/php \
       --enable-pcntl \
+      --with-imap=shared --with-imap-ssl \
       --enable-mbstring=shared \
       --enable-mbregex \
       --with-gd=shared \
@@ -939,7 +951,7 @@ without_shared="--without-gd \
 # Build Apache module, and the CLI SAPI, /usr/bin/php
 pushd build-apache
 build --with-apxs2=%{_httpd_apxs} \
-      --libdir=%{_libdir}/php \
+      --libdir=%{_webconfigdir}%{_libdir}/php \
 %if %{with_libmysql}
       --enable-pdo=shared \
       --with-mysql=shared,%{_prefix} \
@@ -977,11 +989,11 @@ popd
 # Build a special thread-safe (mainly for modules)
 pushd build-ztscli
 
-EXTENSION_DIR=%{_libdir}/php-zts/modules
+EXTENSION_DIR=%{_webconfigdir}%{_libdir}/php-zts/modules
 build --includedir=%{_includedir}/php-zts \
-      --libdir=%{_libdir}/php-zts \
+      --libdir=%{_webconfigdir}%{_libdir}/php-zts \
       --enable-maintainer-zts \
-      --with-config-file-scan-dir=%{_sysconfdir}/php-zts.d \
+      --with-config-file-scan-dir=%{_webconfigdir}%{_sysconfdir}/php-zts.d \
       --enable-pcntl \
       --enable-mbstring=shared \
       --enable-mbregex \
@@ -1117,12 +1129,12 @@ make -C build-cgi install \
      INSTALL_ROOT=$RPM_BUILD_ROOT
 
 # rename extensions build with mysqlnd
-mv $RPM_BUILD_ROOT%{_libdir}/php/modules/mysql.so \
-   $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqlnd_mysql.so
-mv $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqli.so \
-   $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqlnd_mysqli.so
-mv $RPM_BUILD_ROOT%{_libdir}/php/modules/pdo_mysql.so \
-   $RPM_BUILD_ROOT%{_libdir}/php/modules/pdo_mysqlnd.so
+mv $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/mysql.so \
+   $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/mysqlnd_mysql.so
+mv $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/mysqli.so \
+   $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/mysqlnd_mysqli.so
+mv $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/pdo_mysql.so \
+   $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/pdo_mysqlnd.so
 
 %if %{with_libmysql}
 # Install the mysql extension build with libmysql
@@ -1131,13 +1143,13 @@ make -C build-apache install-modules \
 %endif
 
 # Install the default configuration file and icons
-install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/
-install -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/php.ini
+install -m 755 -d $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/
+install -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/php.ini
 install -m 755 -d $RPM_BUILD_ROOT%{_httpd_contentdir}/icons
 install -m 644 php.gif $RPM_BUILD_ROOT%{_httpd_contentdir}/icons/php.gif
 
 # For third-party packaging:
-install -m 755 -d $RPM_BUILD_ROOT%{_datadir}/php
+install -m 755 -d $RPM_BUILD_ROOT%{_webconfigdir}%{_datadir}/php
 
 # install the DSO
 install -m 755 -d $RPM_BUILD_ROOT%{_httpd_moddir}
@@ -1165,12 +1177,14 @@ cat %{SOURCE10} >>$RPM_BUILD_ROOT%{_httpd_modconfdir}/10-php.conf
 install -D -m 644 %{SOURCE1} $RPM_BUILD_ROOT%{_httpd_confdir}/php.conf
 %endif
 
-install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/php.d
+install -m 755 -d $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/php.d
 %if %{with_zts}
-install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/php-zts.d
+install -m 755 -d $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/php-zts.d
 %endif
-install -m 755 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/php
-install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/php/session
+# FIXME: check paths below
+install -m 755 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/webconfig
+install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/webconfig/session
+
 
 %if %{with_fpm}
 # PHP-FPM stuff
@@ -1196,10 +1210,10 @@ install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/php-fpm
 %endif
 # Fix the link
-(cd $RPM_BUILD_ROOT%{_bindir}; ln -sfn phar.phar phar)
+(cd $RPM_BUILD_ROOT%{_webconfigdir}%{_bindir}; ln -sfn phar.phar phar)
 
 # Generate files lists and stub .ini files for each subpackage
-for mod in pgsql odbc ldap snmp xmlrpc \
+for mod in pgsql odbc ldap snmp xmlrpc imap \
     mysqlnd mysqlnd_mysql mysqlnd_mysqli pdo_mysqlnd \
     mbstring gd dom xsl soap bcmath dba xmlreader xmlwriter \
     pdo pdo_pgsql pdo_odbc pdo_sqlite json %{zipmod} \
@@ -1211,22 +1225,22 @@ for mod in pgsql odbc ldap snmp xmlrpc \
     mysql mysqli pdo_mysql \
 %endif
     ; do
-    cat > $RPM_BUILD_ROOT%{_sysconfdir}/php.d/${mod}.ini <<EOF
+    cat > $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/php.d/${mod}.ini <<EOF
 ; Enable ${mod} extension module
 extension=${mod}.so
 EOF
 %if %{with_zts}
-    cat > $RPM_BUILD_ROOT%{_sysconfdir}/php-zts.d/${mod}.ini <<EOF
+    cat > $RPM_BUILD_ROOT%{_webconfigdir}%{_sysconfdir}/php-zts.d/${mod}.ini <<EOF
 ; Enable ${mod} extension module
 extension=${mod}.so
 EOF
 %endif
     cat > files.${mod} <<EOF
-%attr(755,root,root) %{_libdir}/php/modules/${mod}.so
-%config(noreplace) %attr(644,root,root) %{_sysconfdir}/php.d/${mod}.ini
+%attr(755,root,root) %{_webconfigdir}%{_libdir}/php/modules/${mod}.so
+%config(noreplace) %attr(644,root,root) %{_webconfigdir}%{_sysconfdir}/php.d/${mod}.ini
 %if %{with_zts}
-%attr(755,root,root) %{_libdir}/php-zts/modules/${mod}.so
-%config(noreplace) %attr(644,root,root) %{_sysconfdir}/php-zts.d/${mod}.ini
+%attr(755,root,root) %{_webconfigdir}%{_libdir}/php-zts/modules/${mod}.so
+%config(noreplace) %attr(644,root,root) %{_webconfigdir}%{_sysconfdir}/php-zts.d/${mod}.ini
 %endif
 EOF
 done
@@ -1273,78 +1287,23 @@ sed -e "s/@PHP_APIVER@/%{apiver}%{isasuffix}/" \
 %if ! %{with_zts}
     -e "/zts/d" \
 %endif
-    < %{SOURCE3} > macros.php
-install -m 644 -c macros.php \
-           $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.php
+    < %{SOURCE3} > macros.webconfig-php
+install -m 644 -c macros.webconfig-php \
+           $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.webconfig-php
 
 # Remove unpackaged files
-rm -rf $RPM_BUILD_ROOT%{_libdir}/php/modules/*.a \
-       $RPM_BUILD_ROOT%{_libdir}/php-zts/modules/*.a \
-       $RPM_BUILD_ROOT%{_bindir}/{phptar} \
-       $RPM_BUILD_ROOT%{_datadir}/pear \
-       $RPM_BUILD_ROOT%{_libdir}/libphp5.la
+rm -rf $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php/modules/*.a \
+       $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/php-zts/modules/*.a \
+       $RPM_BUILD_ROOT%{_webconfigdir}%{_bindir}/{phptar} \
+       $RPM_BUILD_ROOT%{_webconfigdir}%{_datadir}/pear \
+       $RPM_BUILD_ROOT%{_webconfigdir}%{_libdir}/libphp5.la
 
 # Remove irrelevant docs
 rm -f README.{Zeus,QNX,CVS-RULES}
 
-
-%if %{with_fpm}
-%pre fpm
-# Add the "apache" user as we don't require httpd
-getent group  apache >/dev/null || \
-  groupadd -g 48 -r apache
-getent passwd apache >/dev/null || \
-  useradd -r -u 48 -g apache -s /sbin/nologin \
-    -d %{_httpd_contentdir} -c "Apache" apache
-exit 0
-
-%post fpm
-%if 0%{?systemd_post:1}
-%systemd_post php-fpm.service
-%else
-if [ $1 = 1 ]; then
-    # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
-%endif
-
-%preun fpm
-%if 0%{?systemd_preun:1}
-%systemd_preun php-fpm.service
-%else
-if [ $1 = 0 ]; then
-    # Package removal, not upgrade
-    /bin/systemctl --no-reload disable php-fpm.service >/dev/null 2>&1 || :
-    /bin/systemctl stop php-fpm.service >/dev/null 2>&1 || :
-fi
-%endif
-
-%postun fpm
-%if 0%{?systemd_postun_with_restart:1}
-%systemd_postun_with_restart php-fpm.service
-%else
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ]; then
-    # Package upgrade, not uninstall
-    /bin/systemctl try-restart php-fpm.service >/dev/null 2>&1 || :
-fi
-%endif
-
-# Handle upgrading from SysV initscript to native systemd unit.
-# We can tell if a SysV version of php-fpm was previously installed by
-# checking to see if the initscript is present.
-%triggerun fpm -- php-fpm
-if [ -f /etc/rc.d/init.d/php-fpm ]; then
-    # Save the current service runlevel info
-    # User must manually run systemd-sysv-convert --apply php-fpm
-    # to migrate them to systemd targets
-    /usr/bin/systemd-sysv-convert --save php-fpm >/dev/null 2>&1 || :
-
-    # Run these because the SysV package being removed won't do them
-    /sbin/chkconfig --del php-fpm >/dev/null 2>&1 || :
-    /bin/systemctl try-restart php-fpm.service >/dev/null 2>&1 || :
-fi
-%endif
+rm -rf $RPM_BUILD_ROOT%{_mandir}/man1
+rm -rf $RPM_BUILD_ROOT%{_datadir}/doc
+rm -rf $RPM_BUILD_ROOT%{_libdir}/systemd
 
 %post embedded -p /sbin/ldconfig
 %postun embedded -p /sbin/ldconfig
@@ -1354,7 +1313,7 @@ fi
 %if %{with_zts}
 %{_httpd_moddir}/libphp5-zts.so
 %endif
-%attr(0770,root,apache) %dir %{_localstatedir}/lib/php/session
+%attr(0770,root,webconfig) %dir %{_localstatedir}/lib/webconfig/session
 %config(noreplace) %{_httpd_confdir}/php.conf
 %if "%{_httpd_modconfdir}" != "%{_httpd_confdir}"
 %config(noreplace) %{_httpd_modconfdir}/10-php.conf
@@ -1367,76 +1326,51 @@ fi
 %doc libmagic_LICENSE
 %doc phar_LICENSE
 %doc php.ini-*
-%config(noreplace) %{_sysconfdir}/php.ini
-%dir %{_sysconfdir}/php.d
-%dir %{_libdir}/php
-%dir %{_libdir}/php/modules
+%config(noreplace) %{_webconfigdir}%{_sysconfdir}/php.ini
+%dir %{_webconfigdir}%{_sysconfdir}/php.d
+%dir %{_webconfigdir}%{_libdir}/php
+%dir %{_webconfigdir}%{_libdir}/php/modules
 %if %{with_zts}
-%dir %{_sysconfdir}/php-zts.d
-%dir %{_libdir}/php-zts
-%dir %{_libdir}/php-zts/modules
+%dir %{_webconfigdir}%{_sysconfdir}/php-zts.d
+%dir %{_webconfigdir}%{_libdir}/php-zts
+%dir %{_webconfigdir}%{_libdir}/php-zts/modules
 %endif
-%dir %{_localstatedir}/lib/php
-%dir %{_datadir}/php
+%dir %{_localstatedir}/lib/webconfig
+%dir %{_webconfigdir}%{_datadir}/php
 
 %files cli
-%{_bindir}/php
-%{_bindir}/php-cgi
-%{_bindir}/phar.phar
-%{_bindir}/phar
+%{_webconfigdir}%{_bindir}/php
+%{_webconfigdir}%{_bindir}/php-cgi
+%{_webconfigdir}%{_bindir}/phar.phar
+%{_webconfigdir}%{_bindir}/phar
 # provides phpize here (not in -devel) for pecl command
-%{_bindir}/phpize
-%{_mandir}/man1/php.1*
-%{_mandir}/man1/php-cgi.1*
-%{_mandir}/man1/phar.1*
-%{_mandir}/man1/phar.phar.1*
-%{_mandir}/man1/phpize.1*
+%{_webconfigdir}%{_bindir}/phpize
 %doc sapi/cgi/README* sapi/cli/README
 
-%if %{with_fpm}
-%files fpm
-%doc php-fpm.conf.default
-%doc fpm_LICENSE
-%config(noreplace) %{_sysconfdir}/php-fpm.conf
-%config(noreplace) %{_sysconfdir}/php-fpm.d/www.conf
-%config(noreplace) %{_sysconfdir}/logrotate.d/php-fpm
-%config(noreplace) %{_sysconfdir}/sysconfig/php-fpm
-%{_prefix}/lib/tmpfiles.d/php-fpm.conf
-%{_unitdir}/php-fpm.service
-%{_sbindir}/php-fpm
-%dir %{_sysconfdir}/php-fpm.d
-# log owned by apache for log
-%attr(770,apache,root) %dir %{_localstatedir}/log/php-fpm
-%dir /run/php-fpm
-%{_mandir}/man8/php-fpm.8*
-%dir %{_datadir}/fpm
-%{_datadir}/fpm/status.html
-%endif
-
 %files devel
-%{_bindir}/php-config
-%{_includedir}/php
-%{_libdir}/php/build
+%{_webconfigdir}%{_bindir}/php-config
+%{_includedir}/webconfig-php
+%{_webconfigdir}%{_libdir}/php/build
 %if %{with_zts}
-%{_bindir}/zts-php-config
-%{_includedir}/php-zts
-%{_bindir}/zts-phpize
+%{_webconfigdir}%{_bindir}/zts-php-config
+%{_includedir}/webconfig-php-zts
+%{_webconfigdir}%{_bindir}/zts-phpize
 # usefull only to test other module during build
-%{_bindir}/zts-php
-%{_libdir}/php-zts/build
+%{_webconfigdir}%{_bindir}/zts-php
+%{_webconfigdir}%{_libdir}/php-zts/build
 %endif
-%{_mandir}/man1/php-config.1*
-%{_sysconfdir}/rpm/macros.php
+%{_sysconfdir}/rpm/macros.webconfig-php
 
 %files embedded
-%{_libdir}/libphp5.so
-%{_libdir}/libphp5-%{embed_version}.so
+%{_webconfigdir}%{_libdir}/libphp5.so
+%{_webconfigdir}%{_libdir}/libphp5-%{embed_version}.so
 
 %files pgsql -f files.pgsql
 %if %{with_libmysql}
 %files mysql -f files.mysql
 %endif
 %files odbc -f files.odbc
+%files imap -f files.imap
 %files ldap -f files.ldap
 %files snmp -f files.snmp
 %files xml -f files.xml
@@ -1462,6 +1396,9 @@ fi
 
 
 %changelog
+* Tue May 19 2015 ClearFoundation <developer@clearfoundation.com> -  5.5.16-23.3.clear
+- create sandbox version
+
 * Thu Oct 23 2014 Jan Kaluza <jkaluza@redhat.com> - 5.4.16-23.3
 - fileinfo: fix out-of-bounds read in elf note headers. CVE-2014-3710
 
