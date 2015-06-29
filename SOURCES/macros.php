@@ -6,14 +6,14 @@
 %php_pdo_api  @PHP_PDOVER@
 %php_version  @PHP_VERSION@
 
-%php_extdir    %{_libdir}/php/modules
-%php_ztsextdir %{_libdir}/php-zts/modules
+%php_extdir    /usr/clearos/sandbox%{_libdir}/php/modules
+%php_ztsextdir /usr/clearos/sandbox%{_libdir}/php-zts/modules
 
-%php_inidir    %{_sysconfdir}/php.d
-%php_ztsinidir %{_sysconfdir}/php-zts.d
+%php_inidir    /usr/clearos/sandbox%{_sysconfdir}/php.d
+%php_ztsinidir /usr/clearos/sandbox%{_sysconfdir}/php-zts.d
 
-%php_incldir    %{_includedir}/php
-%php_ztsincldir %{_includedir}/php-zts/php
+%php_incldir    /usr/clearos/sandbox%{_includedir}/php
+%php_ztsincldir /usr/clearos/sandbox%{_includedir}/php-zts/php
 
-%__php         %{_bindir}/php
-%__ztsphp      %{_bindir}/zts-php
+%__php         /usr/clearos/sandbox%{_bindir}/php
+%__ztsphp      /usr/clearos/sandbox%{_bindir}/zts-php
