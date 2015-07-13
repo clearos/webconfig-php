@@ -296,22 +296,22 @@ Provides: webconfig-php-date, webconfig-php-date%{?_isa}
 Provides: webconfig-php-ereg, webconfig-php-ereg%{?_isa}
 Provides: webconfig-php-exif, webconfig-php-exif%{?_isa}
 Provides: webconfig-php-fileinfo, webconfig-php-fileinfo%{?_isa}
+Provides: webconfig-php-pecl-Fileinfo = %{fileinfover}, webconfig-php-pecl-Fileinfo%{?_isa} = %{fileinfover}
+Provides: webconfig-php-pecl(Fileinfo) = %{fileinfover}, webconfig-php-pecl(Fileinfo)%{?_isa} = %{fileinfover}
 Provides: webconfig-php-filter, webconfig-php-filter%{?_isa}
 Provides: webconfig-php-ftp, webconfig-php-ftp%{?_isa}
 Provides: webconfig-php-gettext, webconfig-php-gettext%{?_isa}
+Provides: webconfig-php-gmp, webconfig-php-gmp%{?_isa}
 Provides: webconfig-php-hash, webconfig-php-hash%{?_isa}
 Provides: webconfig-php-mhash = %{version}, webconfig-php-mhash%{?_isa} = %{version}
 Provides: webconfig-php-iconv, webconfig-php-iconv%{?_isa}
+Provides: webconfig-php-json, webconfig-php-json%{?_isa}
+Provides: webconfig-php-pecl-json = %{jsonver}, webconfig-php-pecl-json%{?_isa} = %{jsonver}
+Provides: webconfig-php-pecl(json) = %{jsonver}, webconfig-php-pecl(json)%{?_isa} = %{jsonver}
 Provides: webconfig-php-libxml, webconfig-php-libxml%{?_isa}
 Provides: webconfig-php-openssl, webconfig-php-openssl%{?_isa}
-Provides: webconfig-php-phar, webconfig-php-phar%{?_isa}
-Provides: webconfig-php-pcre, webconfig-php-pcre%{?_isa}
-Provides: webconfig-php-reflection, webconfig-php-reflection%{?_isa}
-Provides: webconfig-php-session, webconfig-php-session%{?_isa}
-Provides: webconfig-php-sockets, webconfig-php-sockets%{?_isa}
-Provides: webconfig-php-spl, webconfig-php-spl%{?_isa}
-Provides: webconfig-php-standard = %{version}, webconfig-php-standard%{?_isa} = %{version}
-Provides: webconfig-php-tokenizer, webconfig-php-tokenizer%{?_isa}
+Provides: webconfig-php-pecl-phar = %{pharver}, webconfig-php-pecl-phar%{?_isa} = %{pharver}
+Provides: webconfig-php-pecl(phar) = %{pharver}, webconfig-php-pecl(phar)%{?_isa} = %{pharver}
 Provides: webconfig-php-phar, webconfig-php-phar%{?_isa}
 Provides: webconfig-php-pcre, webconfig-php-pcre%{?_isa}
 Provides: webconfig-php-reflection, webconfig-php-reflection%{?_isa}
