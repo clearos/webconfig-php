@@ -529,7 +529,7 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
 Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
-Obsoletes: webcoifg-php-domxml, webconfig-php-dom
+Obsoletes: webconfig-php-domxml, webconfig-php-dom
 Provides: webconfig-php-dom, webconfig-php-dom%{?_isa}
 Provides: webconfig-php-simplexml, webconfig-php-simplexml%{?_isa}
 Provides: webconfig-php-wddx, webconfig-php-wddx%{?_isa}
