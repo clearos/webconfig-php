@@ -283,9 +283,9 @@ Summary: Common files for PHP
 # main/snprintf.c, main/spprintf.c and main/rfc1867.c are ASL 1.0
 License: PHP and BSD and ASL 1.0
 # ABI/API check - Arch specific
-Provides: webconifg-php-api = %{apiver}%{isasuffix}, webconifg-php-zend-abi = %{zendver}%{isasuffix}
-Provides: webconifg-php(api) = %{apiver}%{isasuffix}, webconifg-php(zend-abi) = %{zendver}%{isasuffix}
-Provides: webconifg-php(language) = %{version}, webconifg-php(language)%{?_isa} = %{version}
+Provides: webconfig-php-api = %{apiver}%{isasuffix}, webconfig-php-zend-abi = %{zendver}%{isasuffix}
+Provides: webconfig-php(api) = %{apiver}%{isasuffix}, webconfig-php(zend-abi) = %{zendver}%{isasuffix}
+Provides: webconfig-php(language) = %{version}, webconfig-php(language)%{?_isa} = %{version}
 # Provides for all builtin/shared modules:
 Provides: webconfig-php-bz2, webconfig-php-bz2%{?_isa}
 Provides: webconfig-php-calendar, webconfig-php-calendar%{?_isa}
