@@ -531,11 +531,11 @@ License: PHP
 Requires: webconfig-php-common%{?_isa} = %{version}-%{release}
 Obsoletes: webconfig-php-domxml, webconfig-php-dom
 Provides: webconfig-php-dom, webconfig-php-dom%{?_isa}
-Provides: webconfig-php-simplexml, webconfig-php-simplexml%{?_isa}
+Provides: webconfig-php-xsl, webconfig-php-xsl%{?_isa}
+Provides: webconfig-php-domxml, webconfig-php-domxml%{?_isa}
 Provides: webconfig-php-wddx, webconfig-php-wddx%{?_isa}
 Provides: webconfig-php-xmlreader, webconfig-php-xmlreader%{?_isa}
 Provides: webconfig-php-xmlwriter, webconfig-php-xmlwriter%{?_isa}
-Provides: webconfig-php-xsl, webconfig-php-xsl%{?_isa}
 BuildRequires: libxslt-devel >= 1.0.18-1, libxml2-devel >= 2.4.14-1
 
 %description xml
