@@ -72,7 +72,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: webconfig-php
 Version: 5.4.16
-Release: 36%{?dist}
+Release: 36%{?dist}.1
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -1452,7 +1452,7 @@ rm -rf $RPM_BUILD_ROOT%{_libdir}/systemd
 
 
 %changelog
-* Thu Jun 25 2015 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.v7
+* Mon Jul 13 2015 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.v7.1
 - create sandbox version
 
 * Wed Jun 10 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-36
