@@ -2,9 +2,6 @@
 
 Forked version of php in a chroot with ClearOS changes applied
 
-## Update usage
-  Add __#kojibuild__ to commit message to automatically build
-
 * git clone git+ssh://git@github.com/clearos/webconfig-php.git
 * cd webconfig-php
 * git checkout c7
