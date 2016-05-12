@@ -69,7 +69,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
-Release: 36%{?dist}
+Release: 36.1%{?dist}.1
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -113,6 +113,8 @@ Patch26: php-5.4.16-bug66987.patch
 Patch27: php-5.4.16-bug50444.patch
 # https://bugs.php.net/63595 gmp memory allocator
 Patch28: php-5.4.16-bug63595.patch
+# https://bugs.php.net/62129 session rfc1867
+Patch29: php-5.4.16-bug62129.patch
 
 # Functional changes
 Patch40: php-5.4.0-dlopen.patch
@@ -678,6 +680,7 @@ support for using the enchant library to PHP.
 %patch26 -p1 -b .bug66987
 %patch27 -p1 -b .bug50444
 %patch28 -p1 -b .bug63595
+%patch29 -p1 -b .bug62129
 
 %patch40 -p1 -b .dlopen
 %patch41 -p1 -b .easter
@@ -1515,6 +1518,9 @@ fi
 
 
 %changelog
+* Mon Apr  4 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.1
+- session: fix segfault in session with rfc1867 #1323643
+
 * Wed Jun 10 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-36
 - fix more functions accept paths with NUL character #1213407
 
