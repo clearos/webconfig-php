@@ -1455,7 +1455,7 @@ rm -rf $RPM_BUILD_ROOT%{_libdir}/systemd
 
 
 %changelog
-* Fri Jun 10 2015 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.1.v7.1
+* Fri Jun 10 2016 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.1.v7.1
 - create sandbox version
 
 * Mon Apr  4 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.1
