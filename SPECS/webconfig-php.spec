@@ -72,7 +72,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: webconfig-php
 Version: 5.4.16
-Release: 36.1%{?dist}.1
+Release: 36.3%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -118,6 +118,8 @@ Patch27: php-5.4.16-bug50444.patch
 Patch28: php-5.4.16-bug63595.patch
 # https://bugs.php.net/62129 session rfc1867
 Patch29: php-5.4.16-bug62129.patch
+# bad logic in sapi header callback routine
+Patch35: php-5.4.16-bug66375.patch
 
 # Functional changes
 Patch40: php-5.4.0-dlopen.patch
@@ -189,6 +191,7 @@ Patch151: php-5.4.16-CVE-2015-2783.patch
 Patch152: php-5.4.16-CVE-2015-3329.patch
 Patch153: php-5.4.16-bug68819.patch
 Patch154: php-5.4.16-bug69152.patch
+Patch155: php-5.4.16-CVE-2016-5385.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -688,6 +691,7 @@ support for using the enchant library to PHP.
 %patch27 -p1 -b .bug50444
 %patch28 -p1 -b .bug63595
 %patch29 -p1 -b .bug62129
+%patch35 -p1 -b .bug66375
 
 %patch40 -p1 -b .dlopen
 %patch41 -p1 -b .easter
@@ -754,6 +758,7 @@ support for using the enchant library to PHP.
 %patch152 -p1 -b .cve3329
 %patch153 -p1 -b .bug68819
 %patch154 -p1 -b .bug69152
+%patch155 -p1 -b .cve5385
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -1455,8 +1460,15 @@ rm -rf $RPM_BUILD_ROOT%{_libdir}/systemd
 
 
 %changelog
-* Fri Jun 10 2016 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.1.v7.1
+* Fri Aug 26 2016 ClearFoundation <developer@clearfoundation.com> -  5.4.16-36.3.v7
 - create sandbox version
+
+* Fri Jul 22 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.3
+- don't set environmental variable based on user supplied Proxy
+  request header CVE-2016-5385
+
+* Wed Jun 15 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.2
+- fix segmentation fault in header_register_callback #1346758
 
 * Mon Apr  4 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.1
 - session: fix segfault in session with rfc1867 #1323643
