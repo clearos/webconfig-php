@@ -72,7 +72,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: webconfig-php
 Version: 5.4.16
-Release: 36.3%{?dist}
+Release: 36.3%{?dist}.1
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -202,6 +202,7 @@ BuildRequires: zlib-devel, smtpdaemon, libedit-devel
 BuildRequires: pcre-devel >= 6.6
 BuildRequires: bzip2, perl, libtool >= 1.4.3, gcc-c++
 BuildRequires: libtool-ltdl-devel
+BuildRequires: libmcrypt-devel
 %if %{with_libzip}
 BuildRequires: libzip-devel >= 0.10
 %endif
@@ -907,6 +908,7 @@ ln -sf ../configure
 %configure \
 	--cache-file=../config.cache \
         --with-libdir=%{_lib} \
+	--with-mcrypt \
 	--with-config-file-path=%{_webconfigdir}%{_sysconfdir} \
 	--with-config-file-scan-dir=%{_webconfigdir}%{_sysconfdir}/php.d \
 	--disable-debug \
