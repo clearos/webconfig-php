@@ -1,5 +1,6 @@
 %global _webconfigdir /usr/clearos/sandbox
 
+
 # API/ABI check
 %global apiver      20100412
 %global zendver     20100525
