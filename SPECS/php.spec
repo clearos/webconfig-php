@@ -69,7 +69,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: php
 Version: 5.4.16
-Release: 36.3%{?dist}
+Release: 42%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -115,6 +115,16 @@ Patch27: php-5.4.16-bug50444.patch
 Patch28: php-5.4.16-bug63595.patch
 # https://bugs.php.net/62129 session rfc1867
 Patch29: php-5.4.16-bug62129.patch
+# https://bugs.php.net/66762 mysqli segfault
+Patch30: php-5.4.16-bug66762.patch
+# https://bugs.php.net/65641 fpm script name
+Patch31: php-5.4.6-bug65641.patch
+# https://bugs.php.net/71089 duplicate ext
+Patch32: php-5.4.16-bug71089.patch
+# https://bugs.php.net/66833 default digest algo
+Patch33: php-5.4.16-bug66833.patch
+# fixed variable corruption
+Patch34: php-5.4.16-wddx.patch
 # bad logic in sapi header callback routine
 Patch35: php-5.4.16-bug66375.patch
 
@@ -134,6 +144,7 @@ Patch46: php-5.4.9-fixheader.patch
 Patch47: php-5.4.9-phpinfo.patch
 # Fix php_select on aarch64 (http://bugs.php.net/67406)
 Patch48: php-5.4.16-aarch64-select.patch
+Patch49: php-5.4.16-curltls.patch
 
 # Fixes for tests
 Patch60: php-5.4.16-pdotests.patch
@@ -189,6 +200,10 @@ Patch152: php-5.4.16-CVE-2015-3329.patch
 Patch153: php-5.4.16-bug68819.patch
 Patch154: php-5.4.16-bug69152.patch
 Patch155: php-5.4.16-CVE-2016-5385.patch
+Patch156: php-5.4.16-CVE-2016-5766.patch
+Patch157: php-5.4.16-CVE-2016-5767.patch
+Patch158: php-5.4.16-CVE-2016-5768.patch
+Patch159: php-5.4.16-CVE-2016-5399.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -684,6 +699,11 @@ support for using the enchant library to PHP.
 %patch27 -p1 -b .bug50444
 %patch28 -p1 -b .bug63595
 %patch29 -p1 -b .bug62129
+%patch30 -p1 -b .bug66762
+%patch31 -p1 -b .bug65641
+%patch32 -p1 -b .bug71089
+%patch33 -p1 -b .bug66833
+%patch34 -p1 -b .fix
 %patch35 -p1 -b .bug66375
 
 %patch40 -p1 -b .dlopen
@@ -699,6 +719,7 @@ support for using the enchant library to PHP.
 %patch46 -p1 -b .fixheader
 %patch47 -p1 -b .phpinfo
 %patch48 -p1 -b .aarch64select
+%patch49 -p1 -b .curltls
 
 %patch60 -p1 -b .pdotests
 
@@ -752,6 +773,10 @@ support for using the enchant library to PHP.
 %patch153 -p1 -b .bug68819
 %patch154 -p1 -b .bug69152
 %patch155 -p1 -b .cve5385
+%patch156 -p1 -b .cve5766
+%patch157 -p1 -b .cve5767
+%patch158 -p1 -b .cve5768
+%patch159 -p1 -b .cve5399
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -1523,15 +1548,36 @@ fi
 
 
 %changelog
-* Fri Jul 22 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.3
+* Fri Aug  5 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-42
+- bz2: fix improper error handling in bzread() CVE-2016-5399
+
+* Mon Aug  1 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-41
+- gd: fix integer overflow in _gd2GetHeader() resulting in
+  heap overflow CVE-2016-5766
+- gd: fix integer overflow in gdImagePaletteToTrueColor()
+  resulting in heap overflow CVE-2016-5767
+- mbstring: fix double free in _php_mb_regex_ereg_replace_exec
+  CVE-2016-5768
+
+* Fri Jul 22 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-40
 - don't set environmental variable based on user supplied Proxy
   request header CVE-2016-5385
 
-* Wed Jun 15 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.2
-- fix segmentation fault in header_register_callback #1346758
+* Wed Jun 15 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-39
+- fix segmentation fault in header_register_callback #1344578
 
-* Mon Apr  4 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-36.1
-- session: fix segfault in session with rfc1867 #1323643
+* Mon May 30 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-38
+- curl: add options to enable TLS #1291667
+- mysqli: fix segfault in mysqli_stmt::bind_result() when
+  link is closed #1096800
+- fpm: fix incorrectly defined SCRIPT_NAME variable when
+  using Apache #1138563
+- core: fix segfault when a zend_extension is loaded twice #1289457
+- openssl: change default_md algo from MD5 to SHA1 #1073388
+- wddx: fix segfault in php_wddx_serialize_var #1131979
+
+* Mon Apr  4 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-37
+- session: fix segfault in session with rfc1867 #1297179
 
 * Wed Jun 10 2015 Remi Collet <rcollet@redhat.com> - 5.4.16-36
 - fix more functions accept paths with NUL character #1213407
