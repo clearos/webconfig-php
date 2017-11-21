@@ -72,7 +72,7 @@
 Summary: PHP scripting language for creating dynamic web sites
 Name: webconfig-php
 Version: 5.4.16
-Release: 42%{?dist}
+Release: 43%{?dist}
 # All files licensed under PHP version 3.01, except
 # Zend is licensed under Zend
 # TSRM is licensed under BSD
@@ -207,6 +207,8 @@ Patch156: php-5.4.16-CVE-2016-5766.patch
 Patch157: php-5.4.16-CVE-2016-5767.patch
 Patch158: php-5.4.16-CVE-2016-5768.patch
 Patch159: php-5.4.16-CVE-2016-5399.patch
+Patch160: php-5.4.16-CVE-2016-10167.patch
+Patch161: php-5.4.16-CVE-2016-10168.patch
 
 
 BuildRequires: bzip2-devel, curl-devel >= 7.9, gmp-devel
@@ -785,6 +787,8 @@ support for using the enchant library to PHP.
 %patch157 -p1 -b .cve5767
 %patch158 -p1 -b .cve5768
 %patch159 -p1 -b .cve5399
+%patch160 -p1 -b .cve10167
+%patch161 -p1 -b .cve10168
 
 
 # Prevent %%doc confusion over LICENSE files
@@ -1487,8 +1491,12 @@ rm -rf $RPM_BUILD_ROOT%{_libdir}/systemd
 
 
 %changelog
-* Fri Dec 6 2016 ClearFoundation <developer@clearfoundation.com> -  5.4.16-42.v7
+* Tue Nov 12 2017 ClearFoundation <developer@clearfoundation.com> -  5.4.16-43.clear
 - create sandbox version
+
+* Wed Oct  4 2017 Remi Collet <rcollet@redhat.com> - 5.4.16-43
+- gd: fix DoS vulnerability in gdImageCreateFromGd2Ctx() CVE-2016-10167
+- gd: Signed Integer Overflow gd_io.c CVE-2016-10168
 
 * Fri Aug  5 2016 Remi Collet <rcollet@redhat.com> - 5.4.16-42
 - bz2: fix improper error handling in bzread() CVE-2016-5399
